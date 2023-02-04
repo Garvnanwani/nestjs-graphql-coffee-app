@@ -2,13 +2,20 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Flavor Model"""
+type Flavor {
+  id: ID!
+  name: String!
+  coffees: [Coffee!]
+}
+
 """Coffee Model"""
 type Coffee {
   """This is a unique field"""
   id: ID!
   name: String!
   brand: String!
-  flavors: [String!]!
+  flavors: [Flavor!]
 }
 
 type Query {

@@ -5,44 +5,71 @@ import { Repository } from 'typeorm';
 import { CreateCoffeeInput } from './dto/create-coffee.input';
 import { UpdateCoffeeInput } from './dto/update-coffee.input';
 import { Coffee } from './entities/coffee.entity';
+import { Flavor } from './entities/flavor.entity';
 
 @Injectable()
 export class CoffeesService {
   constructor(
     @InjectRepository(Coffee)
-    private readonly coffeeRepository: Repository<Coffee>,
+    private readonly coffeesRepository: Repository<Coffee>,
+    @InjectRepository(Flavor)
+    private readonly flavorsRepository: Repository<Flavor>,
   ) {}
 
   async findAll() {
-    return this.coffeeRepository.find();
+    return this.coffeesRepository.find();
   }
 
   async findOne(id: number) {
-    const coffee = await this.coffeeRepository.findOne({ where: { id } });
+    const coffee = await this.coffeesRepository.findOne({ where: { id } });
     if (!coffee) {
       throw new UserInputError(`Coffee #${id} not found`);
     }
     return coffee;
   }
 
-  async create(createCoffeeDto: CreateCoffeeInput) {
-    const coffee = this.coffeeRepository.create(createCoffeeDto);
-    return this.coffeeRepository.save(coffee);
+  async create(createCoffeeInput: CreateCoffeeInput) {
+    const flavors = await Promise.all(
+      createCoffeeInput.flavors.map((name) => this.preloadFlavorByName(name)),
+    );
+
+    const coffee = this.coffeesRepository.create({
+      ...createCoffeeInput,
+      flavors,
+    });
+    return this.coffeesRepository.save(coffee);
   }
 
-  async update(id: number, updateCoffeeDto: UpdateCoffeeInput) {
-    const coffee = await this.coffeeRepository.preload({
+  async update(id: number, updateCoffeeInput: UpdateCoffeeInput) {
+    const flavors =
+      updateCoffeeInput.flavors &&
+      (await Promise.all(
+        updateCoffeeInput.flavors.map((name) => this.preloadFlavorByName(name)),
+      ));
+
+    const coffee = await this.coffeesRepository.preload({
       id,
-      ...updateCoffeeDto,
+      ...updateCoffeeInput,
+      flavors,
     });
     if (!coffee) {
       throw new UserInputError(`Coffee #${id} not found`);
     }
-    return this.coffeeRepository.save(coffee);
+    return this.coffeesRepository.save(coffee);
   }
 
   async remove(id: number) {
     const coffee = await this.findOne(id);
-    return this.coffeeRepository.remove(coffee);
+    return this.coffeesRepository.remove(coffee);
+  }
+
+  private async preloadFlavorByName(name: string): Promise<Flavor> {
+    const existingFlavors = await this.flavorsRepository.findOne({
+      where: { name },
+    });
+    if (existingFlavors) {
+      return existingFlavors;
+    }
+    return this.flavorsRepository.create({ name });
   }
 }
