@@ -8,6 +8,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CoffeeType } from './../../common/enums/coffee-type.enum';
 import { Flavor } from './flavor.entity';
 
 @Entity()
@@ -29,4 +30,7 @@ export class Coffee implements Drink {
 
   @CreateDateColumn()
   createdAt?: Date;
+
+  @Column({ nullable: true })
+  type?: CoffeeType;
 }
