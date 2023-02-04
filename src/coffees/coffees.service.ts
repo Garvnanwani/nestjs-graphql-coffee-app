@@ -1,28 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserInputError } from 'apollo-server-express';
+import { Repository } from 'typeorm';
 import { CreateCoffeeInput } from './dto/create-coffee.input';
 import { Coffee } from './entities/coffee.entity';
 
 @Injectable()
 export class CoffeesService {
-  private coffees: Coffee[] = [
-    {
-      id: 1,
-      name: 'Shipwreck Roast',
-      brand: 'Buddy Brew',
-      flavors: ['chocolate', 'vanilla'],
-    },
-  ];
+  constructor(
+    @InjectRepository(Coffee)
+    private readonly coffeeRepository: Repository<Coffee>,
+  ) {}
 
-  findAll() {
-    return this.coffees;
+  async findAll() {
+    return this.coffeeRepository.find();
   }
 
-  findOne(id: number) {
-    return this.coffees.find((item) => item.id === id);
+  async findOne(id: number) {
+    const coffee = await this.coffeeRepository.findOne({ where: { id } });
+    if (!coffee) {
+      throw new UserInputError(`Coffee #${id} not found`);
+    }
+    return coffee;
   }
 
-  create(createCoffeeDto: CreateCoffeeInput) {
-    const newCoffee = { ...createCoffeeDto, id: this.coffees.length + 1 };
-    this.coffees.push(newCoffee);
+  async create(createCoffeeDto: CreateCoffeeInput) {
+    const coffee = this.coffeeRepository.create(createCoffeeDto);
+    return this.coffeeRepository.save(coffee);
   }
 }

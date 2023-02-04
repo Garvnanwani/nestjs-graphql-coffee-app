@@ -14,6 +14,8 @@ import { CoffeesModule } from './coffees/coffees.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
+      autoLoadEntities: true,
+      synchronize: true,
     }),
     GraphQLModule.forRoot({
       driver: ApolloDriver,
