@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoffeesModule } from './coffees/coffees.module';
+import { DateScalar } from './common/scalars/date.scalar';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { CoffeesModule } from './coffees/coffees.module';
     CoffeesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, DateScalar],
 })
 export class AppModule {}
