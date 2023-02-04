@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CoffeeType } from './../../common/enums/coffee-type.enum';
+import { loggerMiddleware } from './../../common/middleware/logger.middleware';
 import { Flavor } from './flavor.entity';
 
 @Entity()
@@ -19,6 +20,7 @@ export class Coffee implements Drink {
   id: number;
 
   @Column()
+  @Field({ middleware: [loggerMiddleware] })
   name: string;
 
   @Column()
